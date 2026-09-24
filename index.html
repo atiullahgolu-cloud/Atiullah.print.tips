@@ -1,12 +1,326 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
-  <meta http-equiv="refresh" content="0; url=https://smartcsctools.org/">
-  <script>
-    window.location.href = "https://smartcsctools.org/";
-  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>अतिउल्लाह अंसारी - Smart CSC Auto Print Portal</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --accent: #2563eb;
+      --success: #16a34a;
+      --dark: #0f172a;
+      --light: #f8fafc;
+      --border: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background: #f1f5f9;
+      color: #1e293b;
+      padding-bottom: 40px;
+    }
+
+    /* Modern Stylish Header */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      border-bottom: 3px solid #38bdf8;
+    }
+    .brand-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(to right, #ffffff, #38bdf8, #facc15);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid #38bdf8;
+      color: #e0f2fe;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .tagline {
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    /* Main Workspace */
+    .container {
+      max-width: 900px;
+      margin: 25px auto;
+      padding: 0 15px;
+    }
+    .card-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+    }
+    .upload-zone {
+      border: 2px dashed #93c5fd;
+      background: #eff6ff;
+      border-radius: 10px;
+      padding: 35px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .upload-zone:hover {
+      background: #dbeafe;
+      border-color: #2563eb;
+    }
+    .upload-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    .btn-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-print {
+      background: var(--success);
+      color: white;
+    }
+    .btn-clear {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    /* Output Card Frame */
+    .sheet {
+      margin-top: 25px;
+      padding: 20px;
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .card-item {
+      text-align: center;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+    /* Standard PVC Card CR80 Ratio */
+    canvas.pvc-canvas {
+      width: 85.6mm;
+      height: 53.98mm;
+      border: 1px solid #000;
+      border-radius: 2.5mm;
+      background: white;
+      display: block;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    #status {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    /* Print View */
+    @media print {
+      body {
+        padding: 0;
+        background: white;
+      }
+      header, .upload-zone, .btn-actions, #status, .card-title {
+        display: none !important;
+      }
+      .card-panel {
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+      }
+      .sheet {
+        border: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: row;
+        gap: 5mm;
+      }
+      canvas.pvc-canvas {
+        width: 85.6mm !important;
+        height: 53.98mm !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
 </head>
 <body>
-  <p>Redirecting to Smart CSC Tools...</p>
+
+  <header>
+    <div class="badge">Official CSC Smart Utility</div>
+    <div class="brand-title">अतिउल्लाह अंसारी CSC Tools</div>
+    <p class="tagline">1-Click Auto Cut & Direct PVC Print (CR80 Standard Size)</p>
+  </header>
+
+  <div class="container">
+    <div class="card-panel">
+      <!-- Upload Box -->
+      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📄</div>
+        <h3>Aadhaar / PAN / E-Shram / Ayushman Document Upload Karein</h3>
+        <p style="color: #64748b; font-size: 13px; margin-top: 6px;">PDF ya Photo select karte hi Front aur Back automatically cut ho jayenge.</p>
+        <input type="file" id="fileInput" accept="application/pdf,image/*" style="display:none">
+      </div>
+
+      <div id="status"></div>
+
+      <!-- Live Preview -->
+      <div class="sheet">
+        <div class="card-item">
+          <div class="card-title">Front Side (85.6mm × 53.98mm)</div>
+          <canvas id="frontCanvas" class="pvc-canvas"></canvas>
+        </div>
+        <div class="card-item">
+          <div class="card-title">Back Side (85.6mm × 53.98mm)</div>
+          <canvas id="backCanvas" class="pvc-canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="btn-actions">
+        <button class="btn-print" onclick="window.print()">🖨️ Direct PVC Print</button>
+        <button class="btn-clear" onclick="resetCanvas()">Hatao (Clear)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // 300 DPI CR80 standard
+    const CR80_W = 1011;
+    const CR80_H = 638;
+
+    const frontCanvas = document.getElementById('frontCanvas');
+    const backCanvas = document.getElementById('backCanvas');
+    const fCtx = frontCanvas.getContext('2d');
+    const bCtx = backCanvas.getContext('2d');
+    const statusMsg = document.getElementById('status');
+
+    function init() {
+      frontCanvas.width = CR80_W;
+      frontCanvas.height = CR80_H;
+      backCanvas.width = CR80_W;
+      backCanvas.height = CR80_H;
+      resetCanvas();
+    }
+    init();
+
+    function resetCanvas() {
+      fCtx.fillStyle = '#ffffff';
+      fCtx.fillRect(0, 0, CR80_W, CR80_H);
+      bCtx.fillStyle = '#ffffff';
+      bCtx.fillRect(0, 0, CR80_W, CR80_H);
+      statusMsg.innerText = '';
+    }
+
+    document.getElementById('fileInput').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      statusMsg.innerText = 'Document process ho raha hai... Kripya intezar karein.';
+
+      if (file.type === 'application/pdf') {
+        try {
+          const buffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+          const page = await pdf.getPage(1);
+
+          const viewport = page.getViewport({ scale: 3.0 });
+          const renderCanvas = document.createElement('canvas');
+          renderCanvas.width = viewport.width;
+          renderCanvas.height = viewport.height;
+          const rCtx = renderCanvas.getContext('2d');
+
+          await page.render({ canvasContext: rCtx, viewport: viewport }).promise;
+          autoCropCards(renderCanvas);
+          statusMsg.innerText = 'Auto Cut Safal! Ab aap Print nikal sakte hain.';
+        } catch (err) {
+          statusMsg.innerText = 'Error: Document khul nahi saka. Password protected PDF ho sakti hai.';
+        }
+      } else {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const img = new Image();
+          img.onload = function() {
+            autoCropCards(img);
+            statusMsg.innerText = 'Auto Cut Safal! Ab aap Print nikal sakte hain.';
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 1-Click Smart Coordinates for Indian Documents
+    function autoCropCards(source) {
+      const sW = source.width;
+      const sH = source.height;
+
+      const cardRegionY = sH * 0.70;
+      const cardRegionHeight = sH * 0.28;
+      const halfWidth = sW * 0.45;
+      const leftMargin = sW * 0.04;
+      const rightMargin = sW * 0.51;
+
+      // Front Side
+      fCtx.clearRect(0, 0, CR80_W, CR80_H);
+      fCtx.drawImage(
+        source,
+        leftMargin, cardRegionY, halfWidth, cardRegionHeight,
+        0, 0, CR80_W, CR80_H
+      );
+
+      // Back Side
+      bCtx.clearRect(0, 0, CR80_W, CR80_H);
+      bCtx.drawImage(
+        source,
+        rightMargin, cardRegionY, halfWidth, cardRegionHeight,
+        0, 0, CR80_W, CR80_H
+      );
+    }
+  </script>
 </body>
 </html>
