@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSC Smart Auto Print & Utility Portal</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --primary: #0056b3;
+      --secondary: #28a745;
+      --dark: #1e293b;
+      --light: #f8fafc;
+      --border: #cbd5e1;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #f1f5f9;
+      color: #334155;
+    }
+    /* Header & Navigation */
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    header span {
+      color: #38bdf8;
+    }
+    .nav-tabs {
+      background: white;
+      display: flex;
+      gap: 5px;
+      padding: 10px 25px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 8px 18px;
+      border: none;
+      background: #e2e8f0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #475569;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+    /* Main Layout */
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+    .tool-panel {
+      display: none;
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .tool-panel.active {
+      display: block;
+    }
+    .upload-zone {
+      border: 2px dashed var(--primary);
+      background: #eff6ff;
+      padding: 30px;
+      text-align: center;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .upload-zone input {
+      display: none;
+    }
+    .btn-action {
+      background: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-print {
+      background: var(--secondary);
+    }
+    /* Workspace Canvas Grid */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    @media (max-width: 768px) {
+      .workspace-grid { grid-template-columns: 1fr; }
+    }
+    .preview-box {
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 6px;
+      background: #fafafa;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .card-output {
+      width: 85.6mm;
+      height: 53.98mm;
+      border: 1px solid #000;
+      background: #fff;
+      display: inline-block;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    /* Draggable selection */
+    #selectionBox {
+      position: absolute;
+      border: 2px dashed #e11d48;
+      background: rgba(225, 29, 72, 0.15);
+      cursor: move;
+      display: none;
+    }
+    /* Photo/Signature Tool */
+    .resizer-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .input-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      text-align: left;
+    }
+    .input-field input, .input-field select {
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    /* Print Stylesheet */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .print-area, .print-area * {
+        visibility: visible;
+      }
+      .print-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      .card-output {
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>CSC <span>SmartTools</span> Portal</h1>
+    <p style="font-size: 13px; color: #94a3b8;">Single Click Auto Resizer & PVC Printer</p>
+  </header>
+
+  <!-- Navigation -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('pvc-tool')">Aadhaar / PVC Auto Print</button>
+    <button class="tab-btn" onclick="switchTab('pan-tool')">PAN Card Cut & Print</button>
+    <button class="tab-btn" onclick="switchTab('resizer-tool')">Photo & Signature Resizer</button>
+  </div>
+
+  <div class="container">
+    
+    <!-- 1. PVC Card Tool -->
+    <div id="pvc-tool" class="tool-panel active">
+      <h3>Auto PVC Card Crop & Print (CR80 Standard)</h3>
+      <p style="font-size: 13px; color: #64748b; margin: 5px 0 15px 0;">
+        Aadhaar, E-Shram, Voter ID ya Health Card PDF/Image upload karein. Automatic lower card zone crop ho jayega.
+      </p>
+
+      <div class="upload-zone" onclick="document.getElementById('pvcInput').click()">
+        <strong>Click karein ya PDF/Image yahan drop karein</strong>
+        <input type="file" id="pvcInput" accept="application/pdf,image/*">
+      </div>
+
+      <div class="workspace-grid">
+        <div class="preview-box">
+          <h4>Original Document</h4>
+          <div style="position: relative; display: inline-block; max-width: 100%; margin-top: 10px;">
+            <canvas id="docCanvas" style="max-width: 100%; height: auto; border: 1px solid #ccc;"></canvas>
+            <div id="selectionBox"></div>
+          </div>
+          <div style="margin-top: 10px;">
+            <button class="btn-action" onclick="applySelection()">Selection Set Karein</button>
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <h4>Final PVC Output (85.6mm × 53.98mm)</h4>
+          <div class="print-area" style="margin-top: 10px;">
+            <canvas id="pvcCanvas" class="card-output"></canvas>
+          </div>
+          <div style="margin-top: 15px;">
+            <button class="btn-action btn-print" onclick="window.print()">Print PVC Size</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. PAN Card Tool -->
+    <div id="pan-tool" class="tool-panel">
+      <h3>PAN Card Auto Alignment</h3>
+      <p style="font-size: 13px; color: #64748b; margin: 5px 0 15px 0;">
+        UTI / NSDL se prapt e-PAN PDF upload karein seedhe standard credit-card format me print karne ke liye.
+      </p>
+      <div class="upload-zone" onclick="document.getElementById('panInput').click()">
+        <strong>e-PAN PDF ya Scanned File Chunein</strong>
+        <input type="file" id="panInput" accept="application/pdf,image/*">
+      </div>
+      <div class="preview-box print-area">
+        <canvas id="panCanvas" class="card-output"></canvas>
+      </div>
+      <div style="text-align: center; margin-top: 15px;">
+        <button class="btn-action btn-print" onclick="window.print()">Print PAN Card</button>
+      </div>
+    </div>
+
+    <!-- 3. Form Photo & Signature Resizer -->
+    <div id="resizer-tool" class="tool-panel">
+      <h3>Online Form Photo & Signature Resizer</h3>
+      <p style="font-size: 13px; color: #64748b; margin: 5px 0 15px 0;">
+        SSC, UPSC, Police Bharti aur State Exam forms ke exact size (KB aur Pixels) me convert karein.
+      </p>
+      
+      <div class="upload-zone" onclick="document.getElementById('photoInput').click()">
+        <strong>Photo / Signature Upload Karein</strong>
+        <input type="file" id="photoInput" accept="image/*">
+      </div>
+
+      <div class="resizer-form">
+        <div class="input-field">
+          <label>Preset Format:</label>
+          <select id="presetSelect" onchange="applyPreset()">
+            <option value="custom">Custom Dimensions</option>
+            <option value="ssc-photo">SSC Photo (3.5cm x 4.5cm, 20-50 KB)</option>
+            <option value="ssc-sign">SSC Signature (4.0cm x 2.0cm, 10-20 KB)</option>
+            <option value="ibps-photo">IBPS Photo (200x230 px)</option>
+          </select>
+        </div>
+        <div class="input-field">
+          <label>Chaudai (Width - px):</label>
+          <input type="number" id="targetWidth" value="350">
+        </div>
+        <div class="input-field">
+          <label>Unchai (Height - px):</label>
+          <input type="number" id="targetHeight" value="450">
+        </div>
+        <div class="input-field">
+          <label>Quality (KB Size Maintain):</label>
+          <input type="range" id="qualityRange" min="0.1" max="1.0" step="0.05" value="0.9">
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; text-align: center;">
+        <button class="btn-action" onclick="processImageResize()">Resize & Download</button>
+      </div>
+      <div style="text-align: center; margin-top: 15px;">
+        <canvas id="resizePreviewCanvas" style="display:none; max-width: 200px; border: 1px solid #ccc;"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // Tab Navigation Logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // --- PVC Tool Logic ---
+    const CARD_WIDTH = 1011; // 300 DPI
+    const CARD_HEIGHT = 638;
+    const docCanvas = document.getElementById('docCanvas');
+    const dCtx = docCanvas.getContext('2d');
+    const pvcCanvas = document.getElementById('pvcCanvas');
+    const pCtx = pvcCanvas.getContext('2d');
+    const selBox = document.getElementById('selectionBox');
+    
+    pvcCanvas.width = CARD_WIDTH;
+    pvcCanvas.height = CARD_HEIGHT;
+
+    document.getElementById('pvcInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.type === 'application/pdf') {
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 2.0 });
+        
+        docCanvas.width = viewport.width;
+        docCanvas.height = viewport.height;
+        await page.render({ canvasContext: dCtx, viewport: viewport }).promise;
+        setupAutoCrop(true);
+      } else {
+        const img = new Image();
+        img.onload = () => {
+          docCanvas.width = img.width;
+          docCanvas.height = img.height;
+          dCtx.drawImage(img, 0, 0);
+          setupAutoCrop(false);
+        };
+        img.src = URL.createObjectURL(file);
+      }
+    });
+
+    function setupAutoCrop(isPdf) {
+      selBox.style.display = 'block';
+      let w = docCanvas.clientWidth * 0.85;
+      let h = w * (CARD_HEIGHT / CARD_WIDTH);
+      let x = (docCanvas.clientWidth - w) / 2;
+      let y = isPdf ? (docCanvas.clientHeight - h - 30) : (docCanvas.clientHeight - h) / 2;
+
+      selBox.style.width = w + 'px';
+      selBox.style.height = h + 'px';
+      selBox.style.left = Math.max(0, x) + 'px';
+      selBox.style.top = Math.max(0, y) + 'px';
+      applySelection();
+    }
+
+    // Drag Logic for selection box
+    let drag = false, sx, sy, il, it;
+    selBox.addEventListener('mousedown', (e) => {
+      drag = true; sx = e.clientX; sy = e.clientY;
+      il = selBox.offsetLeft; it = selBox.offsetTop;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!drag) return;
+      selBox.style.left = Math.max(0, Math.min(il + (e.clientX - sx), docCanvas.clientWidth - selBox.offsetWidth)) + 'px';
+      selBox.style.top = Math.max(0, Math.min(it + (e.clientY - sy), docCanvas.clientHeight - selBox.offsetHeight)) + 'px';
+    });
+    window.addEventListener('mouseup', () => { if (drag) { drag = false; applySelection(); } });
+
+    function applySelection() {
+      const scale = docCanvas.width / docCanvas.clientWidth;
+      pCtx.clearRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
+      pCtx.drawImage(
+        docCanvas,
+        selBox.offsetLeft * scale, selBox.offsetTop * scale,
+        selBox.offsetWidth * scale, selBox.offsetHeight * scale,
+        0, 0, CARD_WIDTH, CARD_HEIGHT
+      );
+    }
+
+    // --- PAN Tool Logic ---
+    const panCanvas = document.getElementById('panCanvas');
+    const panCtx = panCanvas.getContext('2d');
+    panCanvas.width = CARD_WIDTH;
+    panCanvas.height = CARD_HEIGHT;
+
+    document.getElementById('panInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.type === 'application/pdf') {
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = viewport.width;
+        tempCanvas.height = viewport.height;
+        await page.render({ canvasContext: tempCanvas.getContext('2d'), viewport: viewport }).promise;
+        // Standard NSDL / UTI bottom region crop
+        panCtx.drawImage(tempCanvas, 0, tempCanvas.height - 650, tempCanvas.width, 650, 0, 0, CARD_WIDTH, CARD_HEIGHT);
+      }
+    });
+
+    // --- Photo / Signature Resizer Logic ---
+    let uploadedImage = null;
+    document.getElementById('photoInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        uploadedImage = new Image();
+        uploadedImage.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function applyPreset() {
+      const mode = document.getElementById('presetSelect').value;
+      if (mode === 'ssc-photo') {
+        document.getElementById('targetWidth').value = 350;
+        document.getElementById('targetHeight').value = 450;
+      } else if (mode === 'ssc-sign') {
+        document.getElementById('targetWidth').value = 400;
+        document.getElementById('targetHeight').value = 200;
+      } else if (mode === 'ibps-photo') {
+        document.getElementById('targetWidth').value = 200;
+        document.getElementById('targetHeight').value = 230;
+      }
+    }
+
+    function processImageResize() {
+      if (!uploadedImage) {
+        alert('Pehle image file upload karein!');
+        return;
+      }
+      const w = parseInt(document.getElementById('targetWidth').value);
+      const h = parseInt(document.getElementById('targetHeight').value);
+      const q = parseFloat(document.getElementById('qualityRange').value);
+
+      const rCanvas = document.getElementById('resizePreviewCanvas');
+      rCanvas.style.display = 'inline-block';
+      rCanvas.width = w;
+      rCanvas.height = h;
+      const rCtx = rCanvas.getContext('2d');
+      rCtx.drawImage(uploadedImage, 0, 0, w, h);
+
+      // Download file automatically
+      const link = document.createElement('a');
+      link.download = 'resized-image.jpg';
+      link.href = rCanvas.toDataURL('image/jpeg', q);
+      link.click();
+    }
+  </script>
+</body>
+</html>
