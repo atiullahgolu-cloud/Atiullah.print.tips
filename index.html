@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>अतिउल्लाह अंसारी - Smart CSC Auto Print Portal</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+  <title>अतिउल्लाह अंसारी - Smart PVC Tool</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Cropper.js for Smooth Mobile & PC Touch Cropping -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
   <style>
     :root {
       --primary: #1e3a8a;
       --accent: #2563eb;
       --success: #16a34a;
-      --dark: #0f172a;
-      --light: #f8fafc;
-      --border: #e2e8f0;
     }
     * {
       box-sizing: border-box;
@@ -23,111 +23,86 @@
     }
     body {
       background: #f1f5f9;
-      color: #1e293b;
       padding-bottom: 40px;
     }
-
-    /* Modern Stylish Header */
     header {
       background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
       color: white;
-      padding: 25px 20px;
+      padding: 20px 15px;
       text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
       border-bottom: 3px solid #38bdf8;
     }
     .brand-title {
-      font-size: 28px;
+      font-size: 22px;
       font-weight: 800;
-      letter-spacing: 0.5px;
       background: linear-gradient(to right, #ffffff, #38bdf8, #facc15);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 6px;
     }
-    .badge {
-      display: inline-block;
-      background: rgba(56, 189, 248, 0.2);
-      border: 1px solid #38bdf8;
-      color: #e0f2fe;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 12px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-    .tagline {
-      font-size: 13px;
-      color: #cbd5e1;
-    }
-
-    /* Main Workspace */
     .container {
       max-width: 900px;
-      margin: 25px auto;
-      padding: 0 15px;
+      margin: 20px auto;
+      padding: 0 12px;
     }
-    .card-panel {
+    .box {
       background: white;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-    }
-    .upload-zone {
-      border: 2px dashed #93c5fd;
-      background: #eff6ff;
       border-radius: 10px;
-      padding: 35px 20px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .upload-btn {
+      display: block;
+      background: #eff6ff;
+      border: 2px dashed #3b82f6;
+      border-radius: 8px;
+      padding: 25px 15px;
       text-align: center;
       cursor: pointer;
-      transition: 0.2s;
+      font-weight: 600;
+      color: var(--primary);
     }
-    .upload-zone:hover {
-      background: #dbeafe;
-      border-color: #2563eb;
+    .crop-wrapper {
+      max-height: 480px;
+      margin-top: 15px;
+      display: none;
+      background: #000;
+      text-align: center;
     }
-    .upload-icon {
-      font-size: 40px;
-      margin-bottom: 10px;
+    .crop-wrapper img {
+      max-width: 100%;
+      display: block;
     }
-    .btn-actions {
+    .action-bar {
       display: flex;
+      gap: 10px;
       justify-content: center;
-      gap: 15px;
-      margin-top: 25px;
+      flex-wrap: wrap;
+      margin-top: 15px;
     }
     button {
-      padding: 12px 24px;
-      font-size: 15px;
+      padding: 12px 20px;
+      font-size: 14px;
       font-weight: 700;
-      border-radius: 8px;
+      border-radius: 6px;
       border: none;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
     }
-    .btn-print {
-      background: var(--success);
-      color: white;
-    }
-    .btn-clear {
-      background: #e2e8f0;
-      color: #334155;
-    }
+    .btn-front { background: #0284c7; color: white; }
+    .btn-back { background: #7c3aed; color: white; }
+    .btn-print { background: var(--success); color: white; width: 100%; max-width: 320px; margin: 0 auto; display: block; font-size: 16px; }
 
-    /* Output Card Frame */
+    /* Output Card Area */
     .sheet {
-      margin-top: 25px;
-      padding: 20px;
-      background: #fafafa;
-      border: 1px solid var(--border);
-      border-radius: 8px;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 20px;
+      gap: 15px;
+      margin-top: 20px;
+      padding: 15px;
+      background: #fafafa;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
     }
     .card-item {
       text-align: center;
@@ -135,41 +110,24 @@
     .card-title {
       font-size: 13px;
       font-weight: 700;
+      margin-bottom: 5px;
       color: #475569;
-      margin-bottom: 6px;
     }
-    /* Standard PVC Card CR80 Ratio */
     canvas.pvc-canvas {
       width: 85.6mm;
       height: 53.98mm;
-      border: 1px solid #000;
+      border: 1px solid #111;
       border-radius: 2.5mm;
       background: white;
       display: block;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
-    #status {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--accent);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
-    /* Print View */
+    /* Print Output Setup */
     @media print {
-      body {
-        padding: 0;
-        background: white;
-      }
-      header, .upload-zone, .btn-actions, #status, .card-title {
-        display: none !important;
-      }
-      .card-panel {
-        box-shadow: none;
-        padding: 0;
-        margin: 0;
-      }
+      body { background: white; padding: 0; }
+      header, .upload-btn, .crop-wrapper, .action-bar, .btn-print, .card-title { display: none !important; }
+      .box { box-shadow: none; padding: 0; margin: 0; }
       .sheet {
         border: none;
         padding: 0;
@@ -190,24 +148,28 @@
 <body>
 
   <header>
-    <div class="badge">Official CSC Smart Utility</div>
     <div class="brand-title">अतिउल्लाह अंसारी CSC Tools</div>
-    <p class="tagline">1-Click Auto Cut & Direct PVC Print (CR80 Standard Size)</p>
+    <p style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">Touch & Drag Mobile PVC Crop & Print Portal</p>
   </header>
 
   <div class="container">
-    <div class="card-panel">
-      <!-- Upload Box -->
-      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-        <div class="upload-icon">📄</div>
-        <h3>Aadhaar / PAN / E-Shram / Ayushman Document Upload Karein</h3>
-        <p style="color: #64748b; font-size: 13px; margin-top: 6px;">PDF ya Photo select karte hi Front aur Back automatically cut ho jayenge.</p>
-        <input type="file" id="fileInput" accept="application/pdf,image/*" style="display:none">
+    <div class="box">
+      <label class="upload-btn" for="docInput">
+        📁 Document (PDF ya Photo) Chunein
+      </label>
+      <input type="file" id="docInput" accept="application/pdf,image/*" style="display:none">
+
+      <!-- Interactive Touch Cropper -->
+      <div class="crop-wrapper" id="cropWrapper">
+        <img id="imageToCrop" src="" alt="Document Preview">
       </div>
 
-      <div id="status"></div>
+      <div class="action-bar" id="cropControls" style="display:none;">
+        <button class="btn-front" onclick="saveCardSide('front')">✂️ 1. Set Front Side</button>
+        <button class="btn-back" onclick="saveCardSide('back')">✂️ 2. Set Back Side</button>
+      </div>
 
-      <!-- Live Preview -->
+      <!-- Live Printable PVC Cards -->
       <div class="sheet">
         <div class="card-item">
           <div class="card-title">Front Side (85.6mm × 53.98mm)</div>
@@ -219,9 +181,8 @@
         </div>
       </div>
 
-      <div class="btn-actions">
-        <button class="btn-print" onclick="window.print()">🖨️ Direct PVC Print</button>
-        <button class="btn-clear" onclick="resetCanvas()">Hatao (Clear)</button>
+      <div style="margin-top: 20px;">
+        <button class="btn-print" onclick="window.print()">🖨️ Print Direct PVC Size</button>
       </div>
     </div>
   </div>
@@ -229,97 +190,71 @@
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    // 300 DPI CR80 standard
-    const CR80_W = 1011;
-    const CR80_H = 638;
+    // 300 DPI Standard CR80 PVC dimensions
+    const PVC_W = 1011;
+    const PVC_H = 638;
 
     const frontCanvas = document.getElementById('frontCanvas');
     const backCanvas = document.getElementById('backCanvas');
     const fCtx = frontCanvas.getContext('2d');
     const bCtx = backCanvas.getContext('2d');
-    const statusMsg = document.getElementById('status');
 
-    function init() {
-      frontCanvas.width = CR80_W;
-      frontCanvas.height = CR80_H;
-      backCanvas.width = CR80_W;
-      backCanvas.height = CR80_H;
-      resetCanvas();
-    }
-    init();
+    frontCanvas.width = PVC_W; frontCanvas.height = PVC_H;
+    backCanvas.width = PVC_W; backCanvas.height = PVC_H;
+    fCtx.fillStyle = '#ffffff'; fCtx.fillRect(0,0,PVC_W,PVC_H);
+    bCtx.fillStyle = '#ffffff'; bCtx.fillRect(0,0,PVC_W,PVC_H);
 
-    function resetCanvas() {
-      fCtx.fillStyle = '#ffffff';
-      fCtx.fillRect(0, 0, CR80_W, CR80_H);
-      bCtx.fillStyle = '#ffffff';
-      bCtx.fillRect(0, 0, CR80_W, CR80_H);
-      statusMsg.innerText = '';
-    }
+    let cropper = null;
+    const cropWrapper = document.getElementById('cropWrapper');
+    const imageToCrop = document.getElementById('imageToCrop');
+    const cropControls = document.getElementById('cropControls');
 
-    document.getElementById('fileInput').addEventListener('change', async function(e) {
+    document.getElementById('docInput').addEventListener('change', async function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      statusMsg.innerText = 'Document process ho raha hai... Kripya intezar karein.';
-
       if (file.type === 'application/pdf') {
-        try {
-          const buffer = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-          const page = await pdf.getPage(1);
-
-          const viewport = page.getViewport({ scale: 3.0 });
-          const renderCanvas = document.createElement('canvas');
-          renderCanvas.width = viewport.width;
-          renderCanvas.height = viewport.height;
-          const rCtx = renderCanvas.getContext('2d');
-
-          await page.render({ canvasContext: rCtx, viewport: viewport }).promise;
-          autoCropCards(renderCanvas);
-          statusMsg.innerText = 'Auto Cut Safal! Ab aap Print nikal sakte hain.';
-        } catch (err) {
-          statusMsg.innerText = 'Error: Document khul nahi saka. Password protected PDF ho sakti hai.';
-        }
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const c = document.createElement('canvas');
+        c.width = viewport.width;
+        c.height = viewport.height;
+        await page.render({ canvasContext: c.getContext('2d'), viewport: viewport }).promise;
+        initCropper(c.toDataURL());
       } else {
         const reader = new FileReader();
-        reader.onload = function(evt) {
-          const img = new Image();
-          img.onload = function() {
-            autoCropCards(img);
-            statusMsg.innerText = 'Auto Cut Safal! Ab aap Print nikal sakte hain.';
-          };
-          img.src = evt.target.result;
-        };
+        reader.onload = (evt) => initCropper(evt.target.result);
         reader.readAsDataURL(file);
       }
     });
 
-    // 1-Click Smart Coordinates for Indian Documents
-    function autoCropCards(source) {
-      const sW = source.width;
-      const sH = source.height;
+    function initCropper(src) {
+      imageToCrop.src = src;
+      cropWrapper.style.display = 'block';
+      cropControls.style.display = 'flex';
 
-      const cardRegionY = sH * 0.70;
-      const cardRegionHeight = sH * 0.28;
-      const halfWidth = sW * 0.45;
-      const leftMargin = sW * 0.04;
-      const rightMargin = sW * 0.51;
+      if (cropper) cropper.destroy();
 
-      // Front Side
-      fCtx.clearRect(0, 0, CR80_W, CR80_H);
-      fCtx.drawImage(
-        source,
-        leftMargin, cardRegionY, halfWidth, cardRegionHeight,
-        0, 0, CR80_W, CR80_H
-      );
+      cropper = new Cropper(imageToCrop, {
+        aspectRatio: PVC_W / PVC_H, // Fixed exact PVC ratio
+        viewMode: 1,
+        autoCropArea: 0.8,
+        responsive: true
+      });
+    }
 
-      // Back Side
-      bCtx.clearRect(0, 0, CR80_W, CR80_H);
-      bCtx.drawImage(
-        source,
-        rightMargin, cardRegionY, halfWidth, cardRegionHeight,
-        0, 0, CR80_W, CR80_H
-      );
+    function saveCardSide(side) {
+      if (!cropper) return;
+      const croppedCanvas = cropper.getCroppedCanvas({ width: PVC_W, height: PVC_H });
+      if (side === 'front') {
+        fCtx.clearRect(0, 0, PVC_W, PVC_H);
+        fCtx.drawImage(croppedCanvas, 0, 0, PVC_W, PVC_H);
+      } else {
+        bCtx.clearRect(0, 0, PVC_W, PVC_H);
+        bCtx.drawImage(croppedCanvas, 0, 0, PVC_W, PVC_H);
+      }
     }
   </script>
 </body>
